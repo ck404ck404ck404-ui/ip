@@ -12,22 +12,28 @@
             --accent: #3b82f6;
             --bg-deep: #020617;
         }
+        
+        /* Ensure html and body can scroll */
+        html, body {
+            height: auto;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-deep);
+        }
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-deep);
             color: #f8fafc;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-        }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        
-        .tech-bg {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #0f172a, #020617);
+            /* Simple background gradient that doesn't block scrolling */
+            background-image: radial-gradient(circle at 50% 50%, #0f172a, #020617);
+            background-attachment: fixed;
         }
 
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
         .glass-card {
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(16px);
@@ -66,11 +72,13 @@
 }
 </script>
 </head>
-<body class="tech-bg">
+<body>
+    <!-- Fixed background elements stay in place while user scrolls -->
     <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 blur-[120px] animate-pulse-slow"></div>
         <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/10 blur-[120px] animate-pulse-slow"></div>
     </div>
+    
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>
