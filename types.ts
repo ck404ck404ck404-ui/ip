@@ -21,6 +21,8 @@ export interface IPData {
   isp?: string;
   network_type?: 'Mobile' | 'Broadband' | 'Hosting' | 'Corporate';
   hostname?: string;
+  connection_type?: string;
+  abuse_score?: number;
 }
 
 export interface SecurityRisk {
@@ -31,6 +33,7 @@ export interface SecurityRisk {
   risk_score: number; // 0-100
   threat_level: 'Low' | 'Medium' | 'High' | 'Critical';
   blacklisted: boolean;
+  fraud_score: number;
 }
 
 export interface DeviceInfo {
@@ -40,6 +43,7 @@ export interface DeviceInfo {
   resolution: string;
   userAgent: string;
   language: string;
+  cpu?: string;
 }
 
 export interface LookupHistory {

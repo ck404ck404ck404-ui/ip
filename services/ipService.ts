@@ -139,6 +139,7 @@ export const fetchIPDetails = async (targetIp?: string): Promise<IPData> => {
   throw new Error('Global IP intelligence is unreachable. Please check your connection.');
 };
 
+// Fix: Added missing fraud_score property to satisfy SecurityRisk interface definition
 export const analyzeSecurity = async (ipData: any): Promise<SecurityRisk> => {
   const sec = ipData._raw_security || {};
   let riskScore = 0;
@@ -160,7 +161,8 @@ export const analyzeSecurity = async (ipData: any): Promise<SecurityRisk> => {
     is_hosting: !!sec.hosting,
     risk_score: riskScore,
     threat_level: riskScore > 75 ? 'Critical' : riskScore > 45 ? 'High' : riskScore > 15 ? 'Medium' : 'Low',
-    blacklisted: riskScore > 80
+    blacklisted: riskScore > 80,
+    fraud_score: riskScore
   };
 };
 
