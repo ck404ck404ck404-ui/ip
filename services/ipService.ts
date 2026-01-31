@@ -2,18 +2,15 @@ import { IPData, SecurityRisk } from '../types';
 
 /**
  * Enhanced Fallback Strategy (Cascade Fetch):
- * 1. cloudflare (Ultra-reliable IP discovery)
- * 2. ipwhois (High detail)
- * 3. bigdatacloud (Resilient)
- * 4. ipapi (Secondary)
- * 5. seeip (Simple)
- * 6. ipify (Public API)
+ * 1. ipwhois (Supports both IP and Domains)
+ * 2. ipapi (Secondary IP support)
+ * 3. bigdatacloud (Client-only fallback)
  */
 
 const providers = [
   {
     name: 'ipwhois',
-    url: (ip?: string) => `https://ipwho.is/${ip || ''}`,
+    url: (query?: string) => `https://ipwho.is/${query || ''}`,
     map: (data: any) => ({
       ip: data.ip,
       city: data.city,
@@ -38,22 +35,8 @@ const providers = [
     })
   },
   {
-    name: 'bigdatacloud',
-    url: (ip?: string) => `https://api.bigdatacloud.net/data/client-info`,
-    map: (data: any) => ({
-      ip: data.clientIp,
-      city: data.location?.city || '',
-      region: data.location?.principalSubdivision || '',
-      country_name: data.location?.countryName || '',
-      country_code: data.location?.countryCode || '',
-      org: data.network?.organisation || 'Unknown',
-      isp: data.network?.organisation || 'Unknown',
-      network_type: 'Broadband'
-    })
-  },
-  {
     name: 'ipapi',
-    url: (ip?: string) => `https://ipapi.co/${ip ? `${ip}/json/` : 'json/'}`,
+    url: (query?: string) => `https://ipapi.co/${query ? `${query}/json/` : 'json/'}`,
     map: (data: any) => ({
       ip: data.ip,
       city: data.city,
@@ -88,14 +71,15 @@ const getIpifyIP = async (): Promise<string | null> => {
   }
 };
 
-export const fetchIPDetails = async (targetIp?: string): Promise<IPData> => {
+export const fetchIPDetails = async (targetQuery?: string): Promise<IPData> => {
   let lastError: any = null;
 
-  // Step 1: Try enriched providers first
+  // Cleanup query (remove http/https if present)
+  let cleanQuery = targetQuery?.trim().replace(/^(https?:\/\/)/, '').replace(/\/$/, '');
+
   for (const provider of providers) {
     try {
-      if (provider.name === 'bigdatacloud' && targetIp) continue;
-      const response = await fetch(provider.url(targetIp), {
+      const response = await fetch(provider.url(cleanQuery), {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
         cache: 'no-store'
@@ -103,7 +87,11 @@ export const fetchIPDetails = async (targetIp?: string): Promise<IPData> => {
 
       if (!response.ok) continue;
       const data = await response.json();
-      if (data.success === false || data.error === true || !data.ip) continue;
+      
+      // Validation for different APIs
+      if (data.success === false || data.error === true) continue;
+      // ipwhois uses 'success' boolean, ipapi.co returns data directly or error=true
+      if (!data.ip && !data.city) continue;
 
       return provider.map(data) as any;
     } catch (error) {
@@ -111,8 +99,8 @@ export const fetchIPDetails = async (targetIp?: string): Promise<IPData> => {
     }
   }
 
-  // Step 2: Critical Fallback - If everything is blocked, try to get at least the IP via Cloudflare or Ipify
-  if (!targetIp) {
+  // Critical Fallback for empty search (My IP)
+  if (!cleanQuery) {
     const fallbackIp = await getCloudflareIP() || await getIpifyIP();
     if (fallbackIp) {
       return {
@@ -132,14 +120,12 @@ export const fetchIPDetails = async (targetIp?: string): Promise<IPData> => {
     }
   }
 
-  // Step 3: Definitive Error
   if (lastError instanceof TypeError && lastError.message === 'Failed to fetch') {
-    throw new Error('Intelligence network blocked. This is caused by an Ad-blocker or strict Firewall. Please disable "uBlock", "Ad-block", or Brave Shield for this site and refresh.');
+    throw new Error('Intelligence network blocked. Please disable Ad-blockers or VPN and refresh.');
   }
-  throw new Error('Global IP intelligence is unreachable. Please check your connection.');
+  throw new Error('Intelligence node unreachable. Input might be invalid or network is down.');
 };
 
-// Fix: Added missing fraud_score property to satisfy SecurityRisk interface definition
 export const analyzeSecurity = async (ipData: any): Promise<SecurityRisk> => {
   const sec = ipData._raw_security || {};
   let riskScore = 0;
@@ -149,8 +135,7 @@ export const analyzeSecurity = async (ipData: any): Promise<SecurityRisk> => {
   if (sec.tor) riskScore += 50;
   if (sec.hosting) riskScore += 20;
 
-  // Basic detection for restricted mode
-  if (ipData.city === 'Discovery Mode') riskScore = 10;
+  if (ipData.city === 'Discovery Mode') riskScore = 5;
 
   riskScore = Math.min(riskScore, 100);
 
