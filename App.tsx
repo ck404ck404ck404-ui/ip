@@ -2,25 +2,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchIPDetails, analyzeSecurity, getDeviceInfo } from './services/ipService';
 import { getAIInsights } from './services/geminiService';
-import { IPData, SecurityRisk, DeviceInfo, LookupHistory } from './types';
+import { IPData, SecurityRisk, DeviceInfo, LookupHistory, Language } from './types';
+import { translations } from './translations';
 import Dashboard from './components/Dashboard';
 import HistoryLog from './components/HistoryLog';
 import { 
   Shield, 
   Globe, 
   History, 
-  Cpu, 
   Moon, 
   Sun, 
   Search, 
   RefreshCcw,
-  Zap
+  Zap,
+  Languages
 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [darkMode, setDarkMode] = useState(true);
+  const [lang, setLang] = useState<Language>('en');
   const [ipData, setIpData] = useState<IPData | null>(null);
   const [security, setSecurity] = useState<SecurityRisk | null>(null);
   const [device, setDevice] = useState<DeviceInfo | null>(null);
@@ -29,9 +31,12 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'history'>('dashboard');
 
+  const t = translations[lang];
+
   const loadData = useCallback(async (targetIp?: string) => {
     setLoading(true);
     setError(null);
+    setAiInsights('');
     try {
       const data = await fetchIPDetails(targetIp);
       const risk = await analyzeSecurity(data);
@@ -41,14 +46,14 @@ const App: React.FC = () => {
       setSecurity(risk);
       setDevice(dev);
       
-      // Save to history
       const newEntry: LookupHistory = {
         id: Date.now().toString(),
         ip: data.ip,
-        timestamp: new Date().toLocaleString(),
+        timestamp: new Date().toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US'),
         location: `${data.city}, ${data.country_name}`,
         risk: risk.threat_level
       };
+
       setHistory(prev => {
         const filtered = prev.filter(h => h.ip !== data.ip);
         const updated = [newEntry, ...filtered].slice(0, 50);
@@ -56,15 +61,15 @@ const App: React.FC = () => {
         return updated;
       });
 
-      // AI Insights - non blocking
-      getAIInsights(data, risk).then(setAiInsights);
+      // AI Insights - respects current language
+      getAIInsights(data, risk, lang).then(setAiInsights);
 
     } catch (err) {
-      setError('Could not retrieve IP intelligence. Please check the address and try again.');
+      setError(lang === 'bn' ? 'আইপি তথ্য উদ্ধার করা সম্ভব হয়নি।' : 'Could not retrieve IP intelligence.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('ip_history');
@@ -72,20 +77,21 @@ const App: React.FC = () => {
     
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'light') setDarkMode(false);
+
+    const savedLang = localStorage.getItem('lang') as Language;
+    if (savedLang) setLang(savedLang);
     
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
+
+  useEffect(() => {
+    localStorage.setItem('lang', lang);
+  }, [lang]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,9 +101,13 @@ const App: React.FC = () => {
     }
   };
 
+  const toggleLanguage = () => {
+    const nextLang = lang === 'en' ? 'bn' : 'en';
+    setLang(nextLang);
+  };
+
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-300`}>
-      {/* Navbar */}
       <nav className={`sticky top-0 z-50 glass border-b ${darkMode ? 'border-slate-800' : 'border-slate-200'} px-4 py-3`}>
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -110,7 +120,7 @@ const App: React.FC = () => {
           <form onSubmit={handleSearch} className="flex-1 max-w-lg w-full relative">
             <input 
               type="text" 
-              placeholder="Enter IPv4 or IPv6 address..." 
+              placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`w-full pl-10 pr-4 py-2 rounded-full border outline-none transition-all ${
@@ -118,7 +128,6 @@ const App: React.FC = () => {
               }`}
             />
             <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
-            <button type="submit" className="hidden">Search</button>
           </form>
 
           <div className="flex items-center gap-2">
@@ -127,26 +136,37 @@ const App: React.FC = () => {
               className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-slate-200 dark:hover:bg-slate-800'}`}
             >
               <Zap size={18} />
-              <span className="hidden sm:inline">Live Dashboard</span>
+              <span className="hidden lg:inline">{t.dashboard}</span>
             </button>
             <button 
               onClick={() => setActiveTab('history')}
               className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${activeTab === 'history' ? 'bg-blue-600 text-white' : 'hover:bg-slate-200 dark:hover:bg-slate-800'}`}
             >
               <History size={18} />
-              <span className="hidden sm:inline">History</span>
+              <span className="hidden lg:inline">{t.history}</span>
             </button>
-            <div className={`w-[1px] h-6 ${darkMode ? 'bg-slate-800' : 'bg-slate-200'} mx-2`}></div>
+            <div className={`w-[1px] h-6 ${darkMode ? 'bg-slate-800' : 'bg-slate-200'} mx-1`}></div>
+            
+            <button 
+              onClick={toggleLanguage}
+              className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-slate-200 hover:bg-slate-300'}`}
+              title="Change Language"
+            >
+              <Languages size={20} />
+              <span className="text-xs font-bold">{lang === 'en' ? 'BN' : 'EN'}</span>
+            </button>
+
             <button 
               onClick={() => setDarkMode(!darkMode)}
-              className={`p-2 rounded-lg transition-colors ${darkMode ? 'bg-slate-800 text-yellow-400' : 'bg-slate-200 text-slate-700'}`}
+              className={`p-2 rounded-lg transition-colors ${darkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
+
             <button 
               onClick={() => loadData()}
               className={`p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors`}
-              title="Refresh IP"
+              title={t.refresh}
             >
               <RefreshCcw size={20} className={loading ? 'animate-spin' : ''} />
             </button>
@@ -163,14 +183,14 @@ const App: React.FC = () => {
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 space-y-4">
+          <div className="flex flex-col items-center justify-center py-32 space-y-4 text-center">
             <div className="relative">
               <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
               <Shield className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-500" size={24} />
             </div>
-            <div className="text-center">
-              <p className="text-lg font-medium">Extracting Intelligence...</p>
-              <p className="text-sm text-slate-500">Analyzing global IP databases & threat signatures</p>
+            <div>
+              <p className="text-lg font-medium">{lang === 'bn' ? 'তথ্য অনুসন্ধান করা হচ্ছে...' : 'Extracting Intelligence...'}</p>
+              <p className="text-sm text-slate-500">{lang === 'bn' ? 'গ্লোবাল আইপি ডাটাবেস বিশ্লেষণ করা হচ্ছে' : 'Analyzing global IP databases & threat signatures'}</p>
             </div>
           </div>
         ) : (
@@ -182,12 +202,14 @@ const App: React.FC = () => {
                 device={device} 
                 aiInsights={aiInsights}
                 darkMode={darkMode}
+                lang={lang}
               />
             )}
             {activeTab === 'history' && (
               <HistoryLog 
                 history={history} 
                 darkMode={darkMode} 
+                lang={lang}
                 onSelect={(ip) => {
                   setSearchQuery(ip);
                   loadData(ip);
@@ -207,14 +229,13 @@ const App: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
           <div className="flex items-center gap-2">
             <Globe size={16} />
-            <span>Powered by Global IP Intelligence Networks & Gemini AI</span>
+            <span>{lang === 'bn' ? 'Gemini AI দ্বারা চালিত' : 'Powered by Global IP Intelligence Networks & Gemini AI'}</span>
           </div>
           <div className="flex gap-6">
-            <a href="#" className="hover:text-blue-500 transition-colors">API Documentation</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-blue-500 transition-colors">Documentation</a>
+            <a href="#" className="hover:text-blue-500 transition-colors">Privacy</a>
           </div>
-          <p>© {new Date().getFullYear()} Guardia IP Intelligence System</p>
+          <p>© {new Date().getFullYear()} Guardia IP System</p>
         </div>
       </footer>
     </div>

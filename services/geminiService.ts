@@ -1,12 +1,19 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { IPData, SecurityRisk } from "../types";
+import { IPData, SecurityRisk, Language } from "../types";
 
-export const getAIInsights = async (ipData: IPData, security: SecurityRisk): Promise<string> => {
-  // Always use `const ai = new GoogleGenAI({apiKey: process.env.API_KEY});`.
+export const getAIInsights = async (ipData: IPData, security: SecurityRisk, lang: Language = 'en'): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  const languageInstruction = lang === 'bn' 
+    ? "Please provide the analysis in Bengali (বাংলা ভাষা)." 
+    : "Please provide the analysis in English.";
+
   const prompt = `
-    Act as a senior cybersecurity analyst. Analyze the following IP intelligence data and provide a concise security summary (2-3 paragraphs) including:
+    Act as a senior cybersecurity analyst. Analyze the following IP intelligence data and provide a concise security summary (2-3 paragraphs).
+    ${languageInstruction}
+    
+    Include:
     1. Geopolitical context of the location (${ipData.city}, ${ipData.country_name}).
     2. Network analysis for ${ipData.org} (ASN: ${ipData.asn}).
     3. Potential risks based on a risk score of ${security.risk_score}/100 and threat level ${security.threat_level}.
@@ -20,7 +27,6 @@ export const getAIInsights = async (ipData: IPData, security: SecurityRisk): Pro
   `;
 
   try {
-    // Fix: Using 'gemini-3-flash-preview' for basic text task as per requirements
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
@@ -29,10 +35,9 @@ export const getAIInsights = async (ipData: IPData, security: SecurityRisk): Pro
         topP: 0.9,
       }
     });
-    // Extracting text output correctly using .text property
-    return response.text || "Unable to generate AI insights at this time.";
+    return response.text || (lang === 'bn' ? "তথ্য পাওয়া যায়নি।" : "Unable to generate AI insights.");
   } catch (error) {
     console.error("AI Insight Error:", error);
-    return "Error connecting to AI intelligence module.";
+    return lang === 'bn' ? "AI সার্ভারের সাথে সংযোগ বিচ্ছিন্ন হয়েছে।" : "Error connecting to AI intelligence module.";
   }
 };

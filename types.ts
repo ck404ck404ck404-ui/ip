@@ -1,4 +1,6 @@
 
+export type Language = 'en' | 'bn';
+
 export interface IPData {
   ip: string;
   city: string;
