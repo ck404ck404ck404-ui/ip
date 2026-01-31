@@ -34,7 +34,12 @@ export const translations = {
     filterLogs: "Filter logs by IP or location...",
     actions: "Actions",
     noLogs: "No logs found matching your criteria",
-    refresh: "Refresh IP"
+    refresh: "Refresh IP",
+    browser: "Browser",
+    os: "Operating System",
+    resolution: "Resolution",
+    deviceType: "Device Type",
+    userAgent: "User Agent"
   },
   bn: {
     dashboard: "ড্যাশবোর্ড",
@@ -45,7 +50,7 @@ export const translations = {
     location: "অবস্থান",
     isp: "ইন্টারনেট সার্ভিস প্রোভাইডার",
     networkHost: "নেটওয়ার্ক এবং হোস্ট",
-    timezone: "সময় অঞ্চল",
+    timezone: "সময় অঞ্চল",    
     postalCoords: "পোস্টাল এবং স্থানাঙ্ক",
     devShortcuts: "ডেভেলপার শর্টকাট",
     rawJson: "Raw JSON কপি করুন",
@@ -70,6 +75,11 @@ export const translations = {
     filterLogs: "আইপি বা অবস্থান দিয়ে ফিল্টার করুন...",
     actions: "অ্যাকশন",
     noLogs: "আপনার শর্তের সাথে মেলে এমন কোনো লগ পাওয়া যায়নি",
-    refresh: "রিফ্রেশ করুন"
+    refresh: "রিফ্রেশ করুন",
+    browser: "ব্রাউজার",
+    os: "অপারেটিং সিস্টেম",
+    resolution: "রেজোলিউশন",
+    deviceType: "ডিভাইস টাইপ",
+    userAgent: "ইউজার এজেন্ট"
   }
 };

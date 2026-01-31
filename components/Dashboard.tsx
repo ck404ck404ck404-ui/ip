@@ -31,7 +31,6 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ data, security, device, aiInsights, darkMode, lang }) => {
   const [copied, setCopied] = useState(false);
-  const [showRaw, setShowRaw] = useState(false);
   const t = translations[lang];
 
   const copyToClipboard = (text: string) => {
@@ -57,10 +56,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data, security, device, aiInsight
   else if (security.threat_level === 'Medium') RISK_COLORS[0] = '#f59e0b';
 
   const getRiskColorClass = () => {
-    if (security.threat_level === 'Low') return 'bg-blue-500';
-    if (security.threat_level === 'Medium') return 'bg-amber-500';
-    return 'bg-red-500';
+    if (security.threat_level === 'Low') return 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]';
+    if (security.threat_level === 'Medium') return 'bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]';
+    return 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]';
   };
+
+  const flagUrl = `https://flagcdn.com/w40/${data.country_code.toLowerCase()}.png`;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -72,16 +73,24 @@ const Dashboard: React.FC<DashboardProps> = ({ data, security, device, aiInsight
           </div>
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-widest text-blue-500 mb-1 block">{t.identity}</span>
-              <div className="flex items-center gap-3">
-                <h2 className="text-3xl md:text-4xl font-mono font-bold">{data.ip}</h2>
-                <button 
-                  onClick={() => copyToClipboard(data.ip)}
-                  className={`p-2 rounded-lg transition-all ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200'}`}
-                >
-                  {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
-                </button>
+            <div className="flex items-start gap-4">
+              <img 
+                src={flagUrl} 
+                alt={`${data.country_name} flag`} 
+                className="w-12 h-auto rounded shadow-sm border border-slate-200 dark:border-slate-700 mt-1"
+                onError={(e) => e.currentTarget.style.display = 'none'}
+              />
+              <div>
+                <span className="text-xs font-bold uppercase tracking-widest text-blue-500 mb-1 block">{t.identity}</span>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-3xl md:text-4xl font-mono font-bold">{data.ip}</h2>
+                  <button 
+                    onClick={() => copyToClipboard(data.ip)}
+                    className={`p-2 rounded-lg transition-all ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-slate-100 hover:bg-slate-200'}`}
+                  >
+                    {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -152,14 +161,14 @@ const Dashboard: React.FC<DashboardProps> = ({ data, security, device, aiInsight
           </div>
         </div>
 
-        <div className={`p-6 rounded-2xl border transition-all ${darkMode ? 'bg-slate-900 border-slate-800' : 'bg-blue-50 border-blue-100'}`}>
+        <div className={`p-6 rounded-2xl border transition-all ${darkMode ? 'bg-slate-900 border-slate-800 shadow-[inset_0_0_20px_rgba(0,0,0,0.5)]' : 'bg-blue-50 border-blue-100'}`}>
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-600 text-white rounded-lg"><Bot size={20} /></div>
+            <div className="p-2 bg-blue-600 text-white rounded-lg shadow-lg shadow-blue-500/30"><Bot size={20} /></div>
             <h3 className="font-bold">{t.aiAnalysis}</h3>
           </div>
           {aiInsights ? (
              <div className="prose prose-sm dark:prose-invert max-w-none">
-               <p className="text-slate-400 leading-relaxed whitespace-pre-line">{aiInsights}</p>
+               <div className="text-slate-400 leading-relaxed whitespace-pre-line bg-white/5 dark:bg-black/20 p-4 rounded-xl border border-white/10">{aiInsights}</div>
              </div>
           ) : (
             <div className="flex items-center gap-3 py-4 text-slate-400 italic">
@@ -210,11 +219,15 @@ const Dashboard: React.FC<DashboardProps> = ({ data, security, device, aiInsight
           </div>
 
           <div className="mt-2 mb-6 px-1">
-            <div className={`h-2.5 w-full rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+            <div className={`h-3 w-full rounded-full overflow-hidden ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
               <div 
                 className={`h-full transition-all duration-1000 ${getRiskColorClass()}`}
                 style={{ width: `${security.risk_score}%` }}
               ></div>
+            </div>
+            <div className="flex justify-between mt-1 px-0.5">
+               <span className="text-[10px] uppercase font-bold text-slate-500">Safe</span>
+               <span className="text-[10px] uppercase font-bold text-slate-500">Critical</span>
             </div>
           </div>
 
@@ -225,7 +238,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, security, device, aiInsight
               { label: t.hosting, status: security.is_hosting, color: 'orange' },
               { label: t.blacklist, status: security.blacklisted, color: 'red' }
             ].map((item, idx) => (
-              <div key={idx} className="flex justify-between items-center text-sm p-2 rounded bg-slate-500/5">
+              <div key={idx} className="flex justify-between items-center text-sm p-2 rounded bg-slate-500/5 border border-white/5">
                 <span className="text-slate-400">{item.label}</span>
                 <span className={`font-bold ${item.status ? `text-${item.color}-500` : 'text-green-500'}`}>
                   {item.status ? (item.label === t.blacklist ? t.flagged : t.detected) : (item.label === t.blacklist ? t.passed : t.clean)}
@@ -242,15 +255,20 @@ const Dashboard: React.FC<DashboardProps> = ({ data, security, device, aiInsight
           </h3>
           <div className="space-y-3 text-sm">
             {[
-              { label: lang === 'bn' ? 'ব্রাউজার' : 'Browser', value: device.browser },
-              { label: lang === 'bn' ? 'অপারেটিং সিস্টেম' : 'OS', value: device.os },
-              { label: lang === 'bn' ? 'রেজোলিউশন' : 'Resolution', value: device.resolution }
+              { label: t.browser, value: device.browser },
+              { label: t.os, value: device.os },
+              { label: t.resolution, value: device.resolution },
+              { label: t.deviceType, value: device.deviceType }
             ].map((d, i) => (
-              <div key={i} className="flex justify-between">
+              <div key={i} className="flex justify-between items-center py-1 border-b border-slate-800/50 last:border-0">
                 <span className="text-slate-500">{d.label}</span>
                 <span className="font-medium">{d.value}</span>
               </div>
             ))}
+            <div className="mt-2 pt-2">
+              <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">{t.userAgent}</p>
+              <p className="text-[10px] font-mono text-slate-600 dark:text-slate-400 break-all leading-tight">{device.userAgent}</p>
+            </div>
           </div>
         </div>
       </div>
