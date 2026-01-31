@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Guardia IP - Intelligent IP Intelligence System",
+  "description": "A comprehensive IP address intelligence and security analysis platform with real-time risk detection, device forensics, and AI-powered cybersecurity insights.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
