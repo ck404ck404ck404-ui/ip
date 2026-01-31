@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchIPDetails, analyzeSecurity, getDeviceInfo } from './services/ipService';
 import { getAIInsights } from './services/geminiService';
@@ -15,7 +14,8 @@ import {
   Search, 
   RefreshCcw,
   Zap,
-  Languages
+  Languages,
+  AlertCircle
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -50,7 +50,7 @@ const App: React.FC = () => {
         id: Date.now().toString(),
         ip: data.ip,
         timestamp: new Date().toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US'),
-        location: `${data.city}, ${data.country_name}`,
+        location: `${data.city || 'Unknown'}, ${data.country_name || 'Unknown'}`,
         risk: risk.threat_level
       };
 
@@ -61,11 +61,20 @@ const App: React.FC = () => {
         return updated;
       });
 
-      // AI Insights - respects current language
-      getAIInsights(data, risk, lang).then(setAiInsights);
+      // Fetch AI Insights only if API Key is likely present
+      if (process.env.API_KEY && process.env.API_KEY !== 'undefined') {
+        getAIInsights(data, risk, lang).then(setAiInsights).catch(err => {
+          console.warn("AI Insights failed:", err);
+          setAiInsights(lang === 'bn' ? 'AI বিশ্লেষণ বর্তমানে অনুপলব্ধ।' : 'AI Analysis is currently unavailable.');
+        });
+      } else {
+        setAiInsights(lang === 'bn' ? 'AI বিশ্লেষণের জন্য API কী প্রয়োজন।' : 'API Key required for AI analysis.');
+      }
 
-    } catch (err) {
-      setError(lang === 'bn' ? 'আইপি তথ্য উদ্ধার করা সম্ভব হয়নি।' : 'Could not retrieve IP intelligence.');
+    } catch (err: any) {
+      console.error("Application Load Error:", err);
+      // Pass through specific error messages from service
+      setError(err.message || (lang === 'bn' ? 'আইপি তথ্য উদ্ধার করা সম্ভব হয়নি।' : 'Could not retrieve IP intelligence.'));
     } finally {
       setLoading(false);
     }
@@ -176,9 +185,10 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto p-4 md:p-6">
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-center gap-3 text-red-500">
-            <Shield size={20} />
-            <p>{error}</p>
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-center gap-3 text-red-500 animate-in fade-in slide-in-from-top-4">
+            <AlertCircle size={20} className="shrink-0" />
+            <p className="font-medium">{error}</p>
+            <button onClick={() => loadData()} className="ml-auto text-xs underline hover:no-underline whitespace-nowrap">Retry</button>
           </div>
         )}
 
@@ -204,6 +214,12 @@ const App: React.FC = () => {
                 darkMode={darkMode}
                 lang={lang}
               />
+            )}
+            {activeTab === 'dashboard' && !ipData && !loading && !error && (
+              <div className="text-center py-20 opacity-50">
+                <Globe size={64} className="mx-auto mb-4" />
+                <p>No data available. Try refreshing or searching for an IP.</p>
+              </div>
             )}
             {activeTab === 'history' && (
               <HistoryLog 
