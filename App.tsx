@@ -7,15 +7,13 @@ import Dashboard from './components/Dashboard';
 import HistoryLog from './components/HistoryLog';
 import { 
   Shield, 
-  Globe, 
   History, 
-  Moon, 
-  Sun, 
   Search, 
   RefreshCcw,
   Zap,
   Languages,
-  AlertCircle
+  AlertCircle,
+  Cpu
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -61,19 +59,14 @@ const App: React.FC = () => {
         return updated;
       });
 
-      // Fetch AI Insights only if API Key is likely present
       if (process.env.API_KEY && process.env.API_KEY !== 'undefined') {
         getAIInsights(data, risk, lang).then(setAiInsights).catch(err => {
           console.warn("AI Insights failed:", err);
           setAiInsights(lang === 'bn' ? 'AI বিশ্লেষণ বর্তমানে অনুপলব্ধ।' : 'AI Analysis is currently unavailable.');
         });
-      } else {
-        setAiInsights(lang === 'bn' ? 'AI বিশ্লেষণের জন্য API কী প্রয়োজন।' : 'API Key required for AI analysis.');
       }
 
     } catch (err: any) {
-      console.error("Application Load Error:", err);
-      // Pass through specific error messages from service
       setError(err.message || (lang === 'bn' ? 'আইপি তথ্য উদ্ধার করা সম্ভব হয়নি।' : 'Could not retrieve IP intelligence.'));
     } finally {
       setLoading(false);
@@ -83,24 +76,8 @@ const App: React.FC = () => {
   useEffect(() => {
     const savedHistory = localStorage.getItem('ip_history');
     if (savedHistory) setHistory(JSON.parse(savedHistory));
-    
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'light') setDarkMode(false);
-
-    const savedLang = localStorage.getItem('lang') as Language;
-    if (savedLang) setLang(savedLang);
-    
     loadData();
   }, []);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode);
-    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
-  }, [darkMode]);
-
-  useEffect(() => {
-    localStorage.setItem('lang', lang);
-  }, [lang]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,97 +88,90 @@ const App: React.FC = () => {
   };
 
   const toggleLanguage = () => {
-    const nextLang = lang === 'en' ? 'bn' : 'en';
-    setLang(nextLang);
+    setLang(prev => prev === 'en' ? 'bn' : 'en');
   };
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} transition-colors duration-300`}>
-      <nav className={`sticky top-0 z-50 glass border-b ${darkMode ? 'border-slate-800' : 'border-slate-200'} px-4 py-3`}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+    <div className="min-h-screen text-slate-100 selection:bg-blue-500/30">
+      {/* Dynamic Background Effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[150px] animate-pulse-slow"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-indigo-600/10 blur-[150px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <header className="sticky top-0 z-50 px-6 py-4 bg-slate-950/50 backdrop-blur-xl border-b border-white/5">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-lg text-white shadow-lg shadow-blue-500/30">
-              <Shield size={24} />
+            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
+              <Shield size={22} className="text-white" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">Guardia<span className="text-blue-500">IP</span></h1>
+            <div className="hidden sm:block">
+              <h1 className="text-lg font-black tracking-tighter">GUARDIA<span className="text-blue-500">IP</span></h1>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">Security Intelligence</p>
+            </div>
           </div>
 
-          <form onSubmit={handleSearch} className="flex-1 max-w-lg w-full relative">
+          <form onSubmit={handleSearch} className="flex-1 max-w-2xl group relative">
             <input 
               type="text" 
               placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2 rounded-full border outline-none transition-all ${
-                darkMode ? 'bg-slate-900 border-slate-700 focus:border-blue-500' : 'bg-white border-slate-300 focus:border-blue-500 shadow-sm'
-              }`}
+              className="w-full pl-12 pr-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 focus:border-blue-500 rounded-2xl outline-none transition-all font-medium text-sm placeholder:text-slate-500"
             />
-            <Search className="absolute left-3 top-2.5 text-slate-400" size={18} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
           </form>
 
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-slate-200 dark:hover:bg-slate-800'}`}
-            >
-              <Zap size={18} />
-              <span className="hidden lg:inline">{t.dashboard}</span>
-            </button>
-            <button 
-              onClick={() => setActiveTab('history')}
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${activeTab === 'history' ? 'bg-blue-600 text-white' : 'hover:bg-slate-200 dark:hover:bg-slate-800'}`}
-            >
-              <History size={18} />
-              <span className="hidden lg:inline">{t.history}</span>
-            </button>
-            <div className={`w-[1px] h-6 ${darkMode ? 'bg-slate-800' : 'bg-slate-200'} mx-1`}></div>
-            
-            <button 
-              onClick={toggleLanguage}
-              className={`p-2 rounded-lg transition-colors flex items-center gap-1 ${darkMode ? 'bg-slate-800 hover:bg-slate-700' : 'bg-slate-200 hover:bg-slate-300'}`}
-              title="Change Language"
-            >
-              <Languages size={20} />
-              <span className="text-xs font-bold">{lang === 'en' ? 'BN' : 'EN'}</span>
-            </button>
+          <div className="flex items-center gap-3">
+            <nav className="hidden md:flex items-center gap-1 p-1 bg-white/5 border border-white/5 rounded-2xl">
+              <button 
+                onClick={() => setActiveTab('dashboard')}
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all font-bold text-sm ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+              >
+                <Zap size={16} /> {t.dashboard}
+              </button>
+              <button 
+                onClick={() => setActiveTab('history')}
+                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all font-bold text-sm ${activeTab === 'history' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+              >
+                <History size={16} /> {t.history}
+              </button>
+            </nav>
 
             <button 
-              onClick={() => setDarkMode(!darkMode)}
-              className={`p-2 rounded-lg transition-colors ${darkMode ? 'bg-slate-800 text-yellow-400 hover:bg-slate-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+              onClick={toggleLanguage}
+              className="p-3 bg-white/5 border border-white/5 rounded-2xl text-slate-400 hover:text-white hover:bg-white/10 transition-all font-black text-xs"
             >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {lang.toUpperCase()}
             </button>
 
             <button 
               onClick={() => loadData()}
-              className={`p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors`}
-              title={t.refresh}
+              className="p-3 bg-white/5 border border-white/5 rounded-2xl text-slate-400 hover:text-white hover:bg-white/10 transition-all"
             >
               <RefreshCcw size={20} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <main className="max-w-7xl mx-auto p-4 md:p-6">
+      <main className="max-w-[1400px] mx-auto px-6 py-10 relative z-10">
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl flex items-center gap-3 text-red-500 animate-in fade-in slide-in-from-top-4">
-            <AlertCircle size={20} className="shrink-0" />
-            <p className="font-medium">{error}</p>
-            <button onClick={() => loadData()} className="ml-auto text-xs underline hover:no-underline whitespace-nowrap">Retry</button>
+          <div className="mb-10 p-5 bg-red-500/10 border border-red-500/30 rounded-3xl flex items-center gap-4 text-red-500">
+            <AlertCircle size={24} />
+            <p className="font-bold">{error}</p>
+            <button onClick={() => loadData()} className="ml-auto px-4 py-2 bg-red-500 text-white rounded-xl text-xs font-black uppercase">Retry</button>
           </div>
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 space-y-4 text-center">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
-              <Shield className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-500" size={24} />
+          <div className="flex flex-col items-center justify-center py-40 text-center">
+            <div className="relative mb-10">
+              <div className="w-24 h-24 border-[6px] border-blue-500/20 border-t-blue-600 rounded-full animate-spin"></div>
+              <Cpu className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-500" size={32} />
             </div>
-            <div>
-              <p className="text-lg font-medium">{lang === 'bn' ? 'তথ্য অনুসন্ধান করা হচ্ছে...' : 'Extracting Intelligence...'}</p>
-              <p className="text-sm text-slate-500">{lang === 'bn' ? 'গ্লোবাল আইপি ডাটাবেস বিশ্লেষণ করা হচ্ছে' : 'Analyzing global IP databases & threat signatures'}</p>
-            </div>
+            <h2 className="text-3xl font-black tracking-tight mb-2">SCANNING NETWORKS</h2>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Synchronizing with global security clusters...</p>
           </div>
         ) : (
           <>
@@ -214,12 +184,6 @@ const App: React.FC = () => {
                 darkMode={darkMode}
                 lang={lang}
               />
-            )}
-            {activeTab === 'dashboard' && !ipData && !loading && !error && (
-              <div className="text-center py-20 opacity-50">
-                <Globe size={64} className="mx-auto mb-4" />
-                <p>No data available. Try refreshing or searching for an IP.</p>
-              </div>
             )}
             {activeTab === 'history' && (
               <HistoryLog 
@@ -241,17 +205,21 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className={`mt-12 py-8 border-t ${darkMode ? 'border-slate-800 bg-slate-900/50' : 'border-slate-200 bg-white'}`}>
-        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-          <div className="flex items-center gap-2">
-            <Globe size={16} />
-            <span>{lang === 'bn' ? 'Gemini AI দ্বারা চালিত' : 'Powered by Global IP Intelligence Networks & Gemini AI'}</span>
+      <footer className="mt-20 py-12 border-t border-white/5 bg-slate-950/30">
+        <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex items-center gap-4">
+            <Shield size={24} className="text-blue-600" />
+            <div>
+              <p className="font-black tracking-tighter text-sm uppercase">Guardia Intelligence System</p>
+              <p className="text-[10px] font-bold text-slate-500 tracking-widest">ENCRYPTED DATA FLOW • V2.5.0</p>
+            </div>
           </div>
-          <div className="flex gap-6">
-            <a href="#" className="hover:text-blue-500 transition-colors">Documentation</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Privacy</a>
+          <div className="flex gap-10 text-xs font-black uppercase tracking-widest text-slate-500">
+            <a href="#" className="hover:text-blue-500 transition-colors">API Docs</a>
+            <a href="#" className="hover:text-blue-500 transition-colors">Security Audit</a>
+            <a href="#" className="hover:text-blue-500 transition-colors">Nodes</a>
           </div>
-          <p>© {new Date().getFullYear()} Guardia IP System</p>
+          <p className="text-[10px] font-mono text-slate-600">© {new Date().getFullYear()} GLOBAL CYBER DEFENSE NETWORK</p>
         </div>
       </footer>
     </div>
