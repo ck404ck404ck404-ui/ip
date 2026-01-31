@@ -3,54 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guardia IP - Intelligent IP Analysis & Security System</title>
+    <title>Guardia IP - Premium Security Intelligence</title>
     
     <!-- SEO & Social Meta -->
-    <meta name="description" content="Advanced IP intelligence system with real-time risk detection, device forensics, and AI-powered cybersecurity analysis.">
-    <meta property="og:title" content="Guardia IP Intelligence System">
-    <meta property="og:description" content="Cybersecurity IP analysis tool with AI insights.">
-    <meta property="og:type" content="website">
-    <meta name="theme-color" content="#2563eb">
-
+    <meta name="description" content="Professional-grade IP intelligence system with AI-powered risk assessment.">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --accent: #3b82f6;
+            --bg-deep: #020617;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #020617;
+            background-color: var(--bg-deep);
             color: #f8fafc;
+            overflow-x: hidden;
         }
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Advanced Tech Background */
+        .tech-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0),
+                linear-gradient(to bottom, #020617, #0f172a);
+            background-size: 40px 40px, 100% 100%;
         }
-        .bg-grid {
-            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
-            background-size: 40px 40px;
+        .glow-orb {
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+            filter: blur(80px);
+            border-radius: 100%;
+            pointer-events: none;
         }
-        .glass-card {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+
+        .glass-premium {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .text-gradient {
-            background: linear-gradient(to right, #60a5fa, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        
+        .anonymity-gauge-ring {
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* Custom scrollbar */
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        .animate-float { animation: float 10s ease-in-out infinite; }
+        
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
-        
-        @keyframes pulse-slow {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-        }
-        .animate-pulse-slow {
-            animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 <script type="importmap">
 {
@@ -66,7 +79,9 @@
 }
 </script>
 </head>
-<body class="bg-grid">
+<body class="tech-bg">
+    <div class="glow-orb top-[-10%] left-[-10%]"></div>
+    <div class="glow-orb bottom-[-10%] right-[-10%] animate-float"></div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>
