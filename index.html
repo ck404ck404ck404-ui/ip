@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardia IP - Premium Security Intelligence</title>
     
-    <!-- SEO & Social Meta -->
-    <meta name="description" content="Professional-grade IP intelligence system with AI-powered risk assessment.">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -20,50 +17,40 @@
             background-color: var(--bg-deep);
             color: #f8fafc;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         
-        /* Advanced Tech Background */
         .tech-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background-image: 
-                radial-gradient(circle at 2px 2px, rgba(255,255,255,0.03) 1px, transparent 0),
-                linear-gradient(to bottom, #020617, #0f172a);
-            background-size: 40px 40px, 100% 100%;
-        }
-        .glow-orb {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
-            filter: blur(80px);
-            border-radius: 100%;
-            pointer-events: none;
+            background: radial-gradient(circle at 50% 50%, #0f172a, #020617);
         }
 
-        .glass-premium {
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
         }
-        
-        .anonymity-gauge-ring {
+
+        .anonymity-circle {
             transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Animations */
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.2; }
         }
-        .animate-float { animation: float 10s ease-in-out infinite; }
-        
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .animate-pulse-slow { animation: pulse-slow 6s infinite; }
+
+        /* Mobile specific adjustments */
+        @media (max-width: 640px) {
+            .glass-card { border-radius: 20px; padding: 1.5rem !important; }
+        }
     </style>
 <script type="importmap">
 {
@@ -80,8 +67,10 @@
 </script>
 </head>
 <body class="tech-bg">
-    <div class="glow-orb top-[-10%] left-[-10%]"></div>
-    <div class="glow-orb bottom-[-10%] right-[-10%] animate-float"></div>
+    <div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 blur-[120px] animate-pulse-slow"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-600/10 blur-[120px] animate-pulse-slow"></div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>

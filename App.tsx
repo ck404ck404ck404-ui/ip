@@ -11,7 +11,6 @@ import {
   Search, 
   RefreshCcw,
   Zap,
-  Languages,
   AlertCircle,
   Cpu
 } from 'lucide-react';
@@ -93,85 +92,94 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen text-slate-100 selection:bg-blue-500/30">
-      {/* Dynamic Background Effects */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 blur-[150px] animate-pulse-slow"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-indigo-600/10 blur-[150px] animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
-      </div>
-
-      <header className="sticky top-0 z-50 px-6 py-4 bg-slate-950/50 backdrop-blur-xl border-b border-white/5">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
-              <Shield size={22} className="text-white" />
+      
+      <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 px-4 md:px-8 py-3 md:py-4">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-4 md:gap-8">
+          
+          <div className="w-full md:w-auto flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-600/20">
+                <Shield size={18} className="text-white md:w-5 md:h-5" />
+              </div>
+              <div>
+                <h1 className="text-base md:text-xl font-black tracking-tighter uppercase">GUARDIA<span className="text-blue-500">IP</span></h1>
+                <p className="hidden md:block text-[8px] font-bold text-slate-500 uppercase tracking-widest leading-none">Security Systems</p>
+              </div>
             </div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg font-black tracking-tighter">GUARDIA<span className="text-blue-500">IP</span></h1>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">Security Intelligence</p>
+            
+            <div className="flex md:hidden items-center gap-2">
+                <button onClick={toggleLanguage} className="p-2 bg-white/5 rounded-lg text-[10px] font-black">{lang.toUpperCase()}</button>
+                <button onClick={() => loadData()} className="p-2 bg-white/5 rounded-lg"><RefreshCcw size={16} className={loading ? 'animate-spin' : ''} /></button>
             </div>
           </div>
 
-          <form onSubmit={handleSearch} className="flex-1 max-w-2xl group relative">
+          <form onSubmit={handleSearch} className="w-full md:flex-1 relative group">
             <input 
               type="text" 
               placeholder={t.searchPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 focus:border-blue-500 rounded-2xl outline-none transition-all font-medium text-sm placeholder:text-slate-500"
+              className="w-full pl-10 pr-4 py-2.5 md:py-3 bg-white/5 hover:bg-white/10 border border-white/10 focus:border-blue-500 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-medium"
             />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={20} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={16} />
           </form>
 
-          <div className="flex items-center gap-3">
-            <nav className="hidden md:flex items-center gap-1 p-1 bg-white/5 border border-white/5 rounded-2xl">
+          <div className="hidden md:flex items-center gap-4">
+            <nav className="flex items-center gap-1 p-1 bg-white/5 border border-white/5 rounded-xl">
               <button 
                 onClick={() => setActiveTab('dashboard')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all font-bold text-sm ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all font-bold text-xs ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/10' : 'text-slate-400 hover:text-white'}`}
               >
-                <Zap size={16} /> {t.dashboard}
+                <Zap size={14} /> {t.dashboard}
               </button>
               <button 
                 onClick={() => setActiveTab('history')}
-                className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all font-bold text-sm ${activeTab === 'history' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 transition-all font-bold text-xs ${activeTab === 'history' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/10' : 'text-slate-400 hover:text-white'}`}
               >
-                <History size={16} /> {t.history}
+                <History size={14} /> {t.history}
               </button>
             </nav>
-
-            <button 
-              onClick={toggleLanguage}
-              className="p-3 bg-white/5 border border-white/5 rounded-2xl text-slate-400 hover:text-white hover:bg-white/10 transition-all font-black text-xs"
-            >
-              {lang.toUpperCase()}
-            </button>
-
-            <button 
-              onClick={() => loadData()}
-              className="p-3 bg-white/5 border border-white/5 rounded-2xl text-slate-400 hover:text-white hover:bg-white/10 transition-all"
-            >
-              <RefreshCcw size={20} className={loading ? 'animate-spin' : ''} />
-            </button>
+            <button onClick={toggleLanguage} className="p-2.5 bg-white/5 rounded-xl text-xs font-black text-slate-400 hover:text-white transition-all">{lang.toUpperCase()}</button>
+            <button onClick={() => loadData()} className="p-2.5 bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all"><RefreshCcw size={18} className={loading ? 'animate-spin' : ''} /></button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-[1400px] mx-auto px-6 py-10 relative z-10">
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 px-4 py-3 bg-slate-950/90 backdrop-blur-xl border-t border-white/5 flex justify-around items-center">
+        <button 
+          onClick={() => setActiveTab('dashboard')}
+          className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'dashboard' ? 'text-blue-500' : 'text-slate-500'}`}
+        >
+          <Zap size={20} />
+          <span className="text-[10px] font-bold uppercase">{t.dashboard}</span>
+        </button>
+        <button 
+          onClick={() => setActiveTab('history')}
+          className={`flex flex-col items-center gap-1 transition-all ${activeTab === 'history' ? 'text-blue-500' : 'text-slate-500'}`}
+        >
+          <History size={20} />
+          <span className="text-[10px] font-bold uppercase">{t.history}</span>
+        </button>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10 pb-24 md:pb-10">
         {error && (
-          <div className="mb-10 p-5 bg-red-500/10 border border-red-500/30 rounded-3xl flex items-center gap-4 text-red-500">
-            <AlertCircle size={24} />
-            <p className="font-bold">{error}</p>
-            <button onClick={() => loadData()} className="ml-auto px-4 py-2 bg-red-500 text-white rounded-xl text-xs font-black uppercase">Retry</button>
+          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center gap-3 text-red-500 text-sm">
+            <AlertCircle size={20} className="shrink-0" />
+            <p className="font-bold flex-1">{error}</p>
+            <button onClick={() => loadData()} className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-[10px] font-black uppercase">Retry</button>
           </div>
         )}
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-40 text-center">
-            <div className="relative mb-10">
-              <div className="w-24 h-24 border-[6px] border-blue-500/20 border-t-blue-600 rounded-full animate-spin"></div>
-              <Cpu className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-500" size={32} />
+          <div className="flex flex-col items-center justify-center py-24 md:py-40 text-center">
+            <div className="relative mb-8">
+              <div className="w-16 h-16 md:w-20 md:h-20 border-4 border-blue-500/20 border-t-blue-600 rounded-full animate-spin"></div>
+              <Cpu className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-blue-500" size={24} />
             </div>
-            <h2 className="text-3xl font-black tracking-tight mb-2">SCANNING NETWORKS</h2>
-            <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">Synchronizing with global security clusters...</p>
+            <h2 className="text-xl md:text-2xl font-black tracking-tight mb-2 uppercase">Syncing Intelligence</h2>
+            <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] md:text-xs">Connecting to secure nodes...</p>
           </div>
         ) : (
           <>
@@ -205,21 +213,13 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="mt-20 py-12 border-t border-white/5 bg-slate-950/30">
-        <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-4">
-            <Shield size={24} className="text-blue-600" />
-            <div>
-              <p className="font-black tracking-tighter text-sm uppercase">Guardia Intelligence System</p>
-              <p className="text-[10px] font-bold text-slate-500 tracking-widest">ENCRYPTED DATA FLOW • V2.5.0</p>
-            </div>
-          </div>
-          <div className="flex gap-10 text-xs font-black uppercase tracking-widest text-slate-500">
-            <a href="#" className="hover:text-blue-500 transition-colors">API Docs</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Security Audit</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Nodes</a>
-          </div>
-          <p className="text-[10px] font-mono text-slate-600">© {new Date().getFullYear()} GLOBAL CYBER DEFENSE NETWORK</p>
+      <footer className="hidden md:block mt-10 py-10 border-t border-white/5 bg-slate-950/30">
+        <div className="max-w-7xl mx-auto px-8 flex justify-between items-center text-slate-500">
+           <div className="flex items-center gap-3">
+              <Shield size={20} className="text-blue-900" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]">Guardia Intel Platform v2.5</p>
+           </div>
+           <p className="text-[10px] font-mono">© {new Date().getFullYear()} CYBER DEFENSE NETWORK</p>
         </div>
       </footer>
     </div>
